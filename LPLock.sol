@@ -11,9 +11,10 @@ contract LPLock {
     address public immutable Owner;
     uint256 public endTime;
     
-    constructor(address lp, address owner) {
+    constructor(address lp, address owner, uint256 endtime) {
         LP = lp;
         Owner = owner;
+        endTime = endtime;
     }
 
     function Lock(uint256 endtime) external returns (bool) {
