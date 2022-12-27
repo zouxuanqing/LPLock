@@ -7,29 +7,38 @@ interface IERC20 {
 }
 
 contract LPLock {
-    address public immutable LP;
     address public immutable Owner;
-    uint256 public endTime;
-    
-    constructor(address lp, address owner, uint256 endtime) {
-        LP = lp;
-        Owner = owner;
-        endTime = endtime;
-    }
-
-    function Lock(uint256 endtime) external returns (bool) {
+    modifier onlyOwner() {
         require(msg.sender == Owner, 'Not owner');
 
-        endTime = endtime;
+        _;
+    }
+
+    address public immutable LP;
+    uint256 public Lock_Period;
+
+    constructor(address lp, address owner) {
+        LP = lp;
+        Owner = owner;
+        Lock_Period = block.timestamp;
+    }
+
+    function addPeriod(uint256 second) external onlyOwner() returns (bool) {
+        Lock_Period += second;
 
         return true;
     }
 
-    function Withdraw() external returns (bool) {
-        require(block.timestamp >= endTime, 'Too early');
-        require(msg.sender == Owner, 'Not owner');
+    function Withdraw(address token) external onlyOwner() returns (bool) {
+        if(token == LP) {
+            require(block.timestamp >= Lock_Period, 'Too early');
 
-        IERC20(LP).transfer(msg.sender, IERC20(LP).balanceOf(address(this)));
+            IERC20(LP).transfer(msg.sender, IERC20(LP).balanceOf(address(this)));
+
+            return true;
+        }
+        
+        IERC20(token).transfer(msg.sender, IERC20(token).balanceOf(address(this)));
 
         return true;
     }
